@@ -36,15 +36,28 @@ The code contains functions to  filter and calculate the envelop of the EMG sign
 
 ### Folder structure
 ``` 
-.
-├── mp_diaphragmEMG # main project folder
-│   └─── filters.py # general signal processing filters contain in functions (Scipy implementations)
-│   └─── gstats.py # general statistics formulas useful for signal processing
-│   └─── linear_envelope_methods.py # functions to extract different linear envelopes
-│   └─── mpstyle.py # functions for plotting styles
+├── mpEMG_py
+│   └─── mp_diaphragmEMG # main Python project folder
+│        └─── filters.py # Implementation signal processing filters
+│        └─── gstats.py # general statistics formulas useful for signal processing
+│        └─── linear_envelope_methods.py # functions to extract different linear envelopes
+│        └─── mpstyle.py # functions for plotting styles
+```
+
+## MATLAB
+
+> [!NOTE]
+> Matlab scripts were translated from python, optimization of the code was not perform on the first upload 
+
+### Folder structure
+``` 
+├── mpEMG_MATLAB # main MATLAB folder
+│   └─── filters.m # Implementation signal processing filters
+│   └─── gstats.m # general statistics formulas useful for signal processing
+│   └─── linear_envelope_methods.m # functions to extract different linear envelopes
 ```
 
 ## Authors 
-- "Jesús Peñaloza <jesus.penalozaa@ufl.edu>"
-- "Taylor Holmes <taylor.holmes@marquette.edu>"
+- Jesús Peñaloza <jesus.penalozaa@ufl.edu>
+- Taylor Holmes <taylor.holmes@marquette.edu>
 
