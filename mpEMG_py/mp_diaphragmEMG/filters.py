@@ -4,7 +4,7 @@ Description: functions containing different filters for time series data
 """
 
 import numpy as np
-from scipy.signal import filtfilt, sosfilt, sosfiltfilt, iirnotch, butter
+from scipy.signal import filtfilt, iirnotch, butter
 
 
 def moving_window(tsx, window_size, step=1):
@@ -61,7 +61,7 @@ def rolling_rms(tsx: np.ndarray, window_size: int) -> np.ndarray:
 # =================== Butter Filters ===========================
 
 
-def _butter_lowpass(f0: float, fs: float, order: int = 4) -> np.ndarray:
+def _butter_lowpass(f0: float, fs: float, order: int = 4) -> tuple:
     """
     Private function to create a Butterworth lowpass filter.
 
@@ -71,11 +71,11 @@ def _butter_lowpass(f0: float, fs: float, order: int = 4) -> np.ndarray:
         order (int, optional): Filter order. Defaults to 4.
 
     Returns:
-        sos (array-like): Filter coefficients.
+        b, a (tuple): Filter coefficients.
     """
     nyq = 0.5 * fs
     normal_cutoff = f0 / nyq
-    return butter(order, normal_cutoff, analog=False, btype="low", output="sos")
+    return butter(order, normal_cutoff, analog=False, btype="low")
 
 
 def butter_lowpass_filter(
@@ -93,13 +93,11 @@ def butter_lowpass_filter(
     Returns:
         array-like: Filtered time series.
     """
-    sos = _butter_lowpass(f0, fs, order)
-    return sosfiltfilt(sos, tsx)
+    b, a = _butter_lowpass(f0, fs, order)
+    return filtfilt(b, a, tsx)
 
 
-def _butter_bandpass(
-    lowcut: float, highcut: float, fs: float, order: int = 4
-) -> np.ndarray:
+def _butter_bandpass(lowcut: float, highcut: float, fs: float, order: int = 4) -> tuple:
     """
     Private function to create a Butterworth bandpass filter.
 
@@ -110,13 +108,12 @@ def _butter_bandpass(
         order (int, optional): Filter order. Defaults to 5.
 
     Returns:
-        sos (array-like): Filter coefficients.
+        b, a (tuple): Filter coefficients.
     """
     nyq = 0.5 * fs
     low = lowcut / nyq
     high = highcut / nyq
-    sos = butter(order, [low, high], analog=False, btype="band", output="sos")
-    return sos
+    return butter(order, [low, high], analog=False, btype="band")
 
 
 def butter_bandpass_filter(
@@ -139,8 +136,8 @@ def butter_bandpass_filter(
     Returns:
         y (array-like): Filtered signal.
     """
-    sos = _butter_bandpass(lowcut, highcut, fs, order=order)
-    y = sosfiltfilt(sos, tsx)
+    b, a = _butter_bandpass(lowcut, highcut, fs, order=order)
+    y = filtfilt(b, a, tsx)
     return y
 
 
