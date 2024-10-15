@@ -11,7 +11,7 @@ from pathlib import Path
 # Plotting
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
-from mp_diaphragmEMG.mpstyle import load_plt_config, ColorPalette
+from mp_emgdiaphragm.mpstyle import load_plt_config, ColorPalette
 
 # Data loading and manipulation
 from neo.io import CedIO
@@ -22,11 +22,11 @@ import numpy as np
 # import quantities as pq
 
 # filter and envelop functions
-from mp_diaphragmEMG.gstats import min_max_normalization, dc_removal
-from mp_diaphragmEMG.filters import notch_filter, butter_bandpass_filter
-from mp_diaphragmEMG.linear_envelope_methods import (
-    mean_envelope,
-    rms_envelope,
+from mp_emgdiaphragm.gstats import min_max_normalization, dc_removal
+from mp_emgdiaphragm.filters import notch_filter, butter_bandpass_filter
+from mp_emgdiaphragm.linear_envelope_methods import (
+    get_mean_envelope,
+    get_rms_envelope,
     lp_envelope,
     tdt_envelope,
 )
@@ -67,9 +67,20 @@ plt.plot(tsx_emg_bp[start:end])
 # %%
 # envelop
 tsx_sample = tsx_emg_bp[start:end]  # sample dataset
+overlap = 0.99
+window_type = "rectangular"
 window_size = int(0.055 * fs)  # window size
-tsx_ma = mean_envelope(tsx_sample, window_size)  # moving average envelope
-tsx_rms = rms_envelope(tsx_sample, window_size)  # moving rms envelope
+window_beta = None
+rectify_method = "abs"
+
+tsx_ma = get_mean_envelope(
+    tsx_sample, overlap, window_type, window_size, window_beta, rectify_method
+)  # moving average envelope
+
+tsx_rms = get_rms_envelope(
+    tsx_sample, overlap, window_type, window_size, window_beta, rectify_method
+)  # moving rms envelope
+
 tsx_lp = lp_envelope(tsx_sample, 4, fs)  # low-pass filter
 tsx_tdt = tdt_envelope(tsx_sample, 4, fs)  # tdt envelope
 # %%
@@ -86,12 +97,13 @@ tsx_tdt_norm = min_max_normalization(dc_removal(tsx_tdt, method="mean"))
 
 time = np.arange(0, tsx_tdt_norm.__len__()) * (1 / fs)
 
-fig, axs = plt.subplots(4, 1, figsize=(15, 12))
-
+fig, axs = plt.subplots(4, 1, figsize=(12, 12))
+fsize = 30
+markersize = 20
 # Subplot 0
 axs[0].plot(time, tsx_sample, color=colors_.colorplot["1"], label="pre-processed")
 axs[0].set_title(
-    "pre-processed unilateral diaphragm EMG signal", fontsize=16, fontweight="bold"
+    "Pre-processed unilateral diaphragm EMG signal", fontsize=fsize, fontweight="bold"
 )
 axs[0].set_xticklabels([])
 axs[0].legend(
@@ -103,10 +115,10 @@ axs[0].legend(
             color=colors_.colorplot["1"],
             label="Pre-processed",
             markerfacecolor=colors_.colorplot["1"],
-            markersize=15,
+            markersize=markersize,
         ),
     ],
-    prop={"weight": "bold"},
+    prop={"weight": "bold", "size": 18},
     loc="upper right",
     bbox_to_anchor=(1, 1),
     borderaxespad=1,
@@ -127,7 +139,9 @@ axs[1].fill_between(
     alpha=0.15,
 )
 axs[1].set_title(
-    "Normalized Moving Averager (window size = 0.055s)", fontsize=16, fontweight="bold"
+    "Normalized Moving Averager (window size = 0.055s)",
+    fontsize=fsize,
+    fontweight="bold",
 )
 axs[1].set_xticklabels([])
 axs[1].legend(
@@ -140,7 +154,7 @@ axs[1].legend(
             alpha=0.5,
             label="Pre-processed",
             markerfacecolor=colors_.colorplot["1"],
-            markersize=15,
+            markersize=markersize,
         ),
         Line2D(
             [0],
@@ -149,10 +163,10 @@ axs[1].legend(
             color=colors_.colorplot["3"],
             label="MA LE",
             markerfacecolor=colors_.colorplot["4"],
-            markersize=15,
+            markersize=markersize,
         ),
     ],
-    prop={"weight": "bold"},
+    prop={"weight": "bold", "size": 18},
     loc="upper right",
     bbox_to_anchor=(1, 1),
     borderaxespad=1,
@@ -172,7 +186,7 @@ axs[2].fill_between(
     alpha=0.15,
 )
 axs[2].set_title(
-    "Normalized Moving RMS (window size = 0.055s)", fontsize=16, fontweight="bold"
+    "Normalized Moving RMS (window size = 0.055s)", fontsize=fsize, fontweight="bold"
 )
 axs[2].set_xticklabels([])
 axs[2].legend(
@@ -185,7 +199,7 @@ axs[2].legend(
             alpha=0.5,
             label="Pre-processed",
             markerfacecolor=colors_.colorplot["1"],
-            markersize=15,
+            markersize=markersize,
         ),
         Line2D(
             [0],
@@ -194,10 +208,10 @@ axs[2].legend(
             color=colors_.colorplot["5"],
             label="RMS LE",
             markerfacecolor=colors_.colorplot["6"],
-            markersize=15,
+            markersize=markersize,
         ),
     ],
-    prop={"weight": "bold"},
+    prop={"weight": "bold", "size": 18},
     loc="upper right",
     bbox_to_anchor=(1, 1),
     borderaxespad=1,
@@ -217,7 +231,7 @@ axs[3].fill_between(
     alpha=0.15,
 )
 axs[3].set_title(
-    "Normalized Low-Pass filter (cutOff = 4Hz)", fontsize=16, fontweight="bold"
+    "Normalized Low-Pass filter (cutOff = 4Hz)", fontsize=fsize, fontweight="bold"
 )
 axs[3].legend(
     handles=[
@@ -229,7 +243,7 @@ axs[3].legend(
             alpha=0.5,
             label="Pre-processed",
             markerfacecolor=colors_.colorplot["1"],
-            markersize=15,
+            markersize=markersize,
         ),
         Line2D(
             [0],
@@ -238,25 +252,26 @@ axs[3].legend(
             color=colors_.colorplot["7"],
             label="LP LE",
             markerfacecolor=colors_.colorplot["8"],
-            markersize=15,
+            markersize=markersize,
         ),
     ],
-    prop={"weight": "bold"},
+    prop={"weight": "bold", "size": 18},
     loc="upper right",
     bbox_to_anchor=(1, 1),
     borderaxespad=1,
 )
 
 
-for ax in axs[1:]:
-    ax.set_ylabel("A.Units", fontsize=14)
+for ax in axs:
+    ax.set_ylabel("A.Units", fontsize=30, weight="bold")
+    ax.tick_params(axis="y", labelsize=20)
+    ax.set_ylim(-0.5, 1.1)
 
-axs[0].set_ylabel("V", fontsize=14)
-axs[3].set_xlabel("Time (s)", fontsize=14)
-
+axs[3].set_xlabel("Time (s)", fontsize=30)
+axs[3].tick_params(axis="x", labelsize=20)
 plt.tight_layout()  # Adjust the layout
 plt.show()
 # %%
-fig.savefig("figs/envelop_comparison.png", dpi=600)
+fig.savefig("../../figures/envelop_comparison.png", dpi=600)
 
 # %%

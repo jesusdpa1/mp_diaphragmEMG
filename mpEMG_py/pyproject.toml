@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "mp-diaphragmemg"
+name = "mp_emgdiaphragm"
 version = "0.1.0"
 description = "Code to replicate figures for the methods paper on fine-wire diaphragm emg"
 authors = [
@@ -8,23 +8,23 @@ authors = [
 ]
 license = "MIT"
 readme = "README.md"
+packages = [{ include = "mp-emgdiaphragm" }]
 
 [tool.poetry.dependencies]
-python = "^3.9, <3.10"
-ipykernel = "^6.29.0"
+python = "^3.9"
+ipykernel = "^6.29"
 ipympl = "^0.9.4"
-pyarrow = "^14.0.2"
-numpy = "^1.26.3"
-matplotlib = "^3.8.2"
-mpl-interactions = { extras = ["jupyter"], version = "^0.24.1" }
-neo = "^0.12.0"
-scipy = "^1.11.4"
-scikit-learn = "^1.5.0"
-
+pyarrow = "^14.0"
+numpy = "^1.26"
+matplotlib = "^3.8"
+mpl-interactions = { extras = ["jupyter"], version = "^0.24" }
+neo = "^0.12"
+scipy = "^1.11"
+scikit-learn = "^1.5"
 
 [tool.poetry.group.dev.dependencies]
-black = "^23.12.1"
-python-lsp-ruff = "^2.0.2"
+black = "^23.12"
+python-lsp-ruff = "^2.1"
 
 [build-system]
 requires = ["poetry-core"]

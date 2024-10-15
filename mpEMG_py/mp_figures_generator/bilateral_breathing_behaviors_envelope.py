@@ -22,7 +22,11 @@ import numpy as np
 # import quantities as pq
 
 # filter and envelop functions
+from mp_emgdiaphragm.gstats import min_max_normalization, dc_removal
 from mp_emgdiaphragm.filters import notch_filter, butter_bandpass_filter
+from mp_emgdiaphragm.linear_envelope_methods import (
+    get_rms_envelope,
+)
 
 # %%
 load_plt_config()
@@ -75,7 +79,7 @@ fs = float(tsx_emg_eupneic_r.sampling_rate)  # assuming all sampling rates are t
 for ts in [tsx_emg_eupneic_r, tsx_emg_sniffing_r, tsx_emg_sigh_r]:
     print(f"sampling rate: {ts.sampling_rate}")
 # %%
-# eupneic breathing
+# eupnic breathing
 # Right
 tsx_eupneic_r = tsx_emg_eupneic_r.magnitude.squeeze()
 tsx_eupneic_notch_r = notch_filter(tsx_eupneic_r, fs=fs)
@@ -117,8 +121,8 @@ tsx_sigh_notch_l = notch_filter(tsx_sigh_l, fs=fs)
 tsx_sigh_bp_l = butter_bandpass_filter(
     tsx=tsx_sigh_notch_l, lowcut=0.1, highcut=1000, fs=fs, order=4
 )
-# %%
 
+# %%
 tsx_eupneic_sample_r = tsx_eupneic_bp_r[int(1 * fs) : int(7 * fs)]
 tsx_eupneic_sample_l = tsx_eupneic_bp_l[int(1 * fs) : int(7 * fs)]
 
@@ -137,37 +141,99 @@ plt.plot(tsx_sniffing_sample_r)
 plt.plot(tsx_sigh_sample_r)
 
 # %%
-
 plt.plot(tsx_eupneic_sample_l)
 plt.plot(tsx_sniffing_sample_l)
 plt.plot(tsx_sigh_sample_l)
 # %%
+# get the envelope
+overlap = 0.99
+window_type = "rectangular"
+window_size = int(0.055 * fs)  # window size
+window_beta = None
+rectify_method = "abs"
+
+tsx_eupneic_sample_r_rms = get_rms_envelope(
+    tsx_eupneic_sample_r, overlap, window_type, window_size, window_beta, rectify_method
+)  # eupnic breathing moving rms envelope right
+
+tsx_eupneic_sample_l_rms = get_rms_envelope(
+    tsx_eupneic_sample_l, overlap, window_type, window_size, window_beta, rectify_method
+)  # eupnic breathing moving rms envelope left
+
+# Sniffing
+tsx_sniffing_sample_r_rms = get_rms_envelope(
+    tsx_sniffing_sample_r,
+    overlap,
+    window_type,
+    window_size,
+    window_beta,
+    rectify_method,
+)  # sniffing breathing moving rms envelope right
+
+tsx_sniffing_sample_l_rms = get_rms_envelope(
+    tsx_sniffing_sample_l,
+    overlap,
+    window_type,
+    window_size,
+    window_beta,
+    rectify_method,
+)  # sniffing breathing moving rms envelope left
+
+# sigh
+tsx_sigh_sample_r_rms = get_rms_envelope(
+    tsx_sigh_sample_r,
+    overlap,
+    window_type,
+    window_size,
+    window_beta,
+    rectify_method,
+)  # sniffing breathing moving rms envelope right
+
+tsx_sigh_sample_l_rms = get_rms_envelope(
+    tsx_sigh_sample_l,
+    overlap,
+    window_type,
+    window_size,
+    window_beta,
+    rectify_method,
+)  # sniffing breathing moving rms envelope left
+# %%
+# eupnic breathing normalization
+tsx_eupneic_sample_r_rms_norm = min_max_normalization(tsx_eupneic_sample_r_rms)
+tsx_eupneic_sample_l_rms_norm = min_max_normalization(tsx_eupneic_sample_l_rms)
+# sniffing normalization
+tsx_sniffing_sample_r_rms_norm = min_max_normalization(tsx_sniffing_sample_r_rms)
+tsx_sniffing_sample_l_rms_norm = min_max_normalization(tsx_sniffing_sample_l_rms)
+# sigh normalization
+tsx_sigh_sample_r_rms_norm = min_max_normalization(tsx_sigh_sample_r_rms)
+tsx_sigh_sample_l_rms_norm = min_max_normalization(tsx_sigh_sample_l_rms)
+# %%
 # generate the figure
 # get the relative time to use in the plot
 # this is calculated by getting the length of the array and multiply it by 1/fs
-
 
 time = np.arange(0, tsx_eupneic_sample_r.__len__()) * (1 / fs)
 
 fig, axs = plt.subplots(3, 1, figsize=(10, 12))
 fsize = 30
 markersize = 20
+linewidth = 0.9
 # Subplot 0
 # Right
 axs[0].plot(
     time,
-    tsx_eupneic_sample_r + 1.2,
+    tsx_eupneic_sample_r_rms_norm + 1,
     color=colors_.colorplot["1"],
     label="Right",
-    linewidth=0.5,
+    linewidth=linewidth,
 )
 # Left
 axs[0].plot(
     time,
-    tsx_eupneic_sample_l - 1.2,
+    tsx_eupneic_sample_l_rms_norm - 1,
     color=colors_.colorplot["2"],
     label="Left",
-    linewidth=0.5,
+    linewidth=linewidth,
 )
 
 axs[0].set_title("Eupneic Breathing", fontsize=fsize, fontweight="bold")
@@ -204,18 +270,18 @@ axs[0].legend(
 # Subplot 1
 axs[1].plot(
     time,
-    tsx_sniffing_sample_r + 1.4,
+    tsx_sniffing_sample_r_rms_norm + 1,
     color=colors_.colorplot["7"],
     label="Right",
-    linewidth=0.5,
+    linewidth=linewidth,
 )
 # Left
 axs[1].plot(
     time,
-    tsx_sniffing_sample_l - 1.4,
+    tsx_sniffing_sample_l_rms_norm - 1,
     color=colors_.colorplot["8"],
     label="Left",
-    linewidth=0.5,
+    linewidth=linewidth,
 )
 
 axs[1].set_title("Sniffing", fontsize=fsize, fontweight="bold")
@@ -251,18 +317,18 @@ axs[1].legend(
 # Subplot 2
 axs[2].plot(
     time,
-    tsx_sigh_sample_r + 1.4,
+    tsx_sigh_sample_r_rms_norm + 1,
     color=colors_.colorplot["5"],
     label="Right",
-    linewidth=0.5,
+    linewidth=linewidth,
 )
 # Left
 axs[2].plot(
     time,
-    tsx_sigh_sample_l - 1.4,
+    tsx_sigh_sample_l_rms_norm - 1,
     color=colors_.colorplot["6"],
     label="Left",
-    linewidth=0.5,
+    linewidth=linewidth,
 )
 
 axs[2].set_title("Sigh", fontsize=fsize, fontweight="bold")
@@ -302,7 +368,7 @@ ymin = (
         np.min(tsx_sniffing_sample_r),
         np.min(tsx_sigh_sample_r),
     )
-    * 2.2
+    * 1.2
 )
 ymax = (
     max(
@@ -310,7 +376,7 @@ ymax = (
         np.max(tsx_sniffing_sample_r),
         np.max(tsx_sigh_sample_r),
     )
-    * 2.2
+    * 1.5
 )
 for ax in axs:
     ax.set_ylim(ymin, ymax)
@@ -323,6 +389,6 @@ axs[2].tick_params(axis="x", labelsize=20)
 plt.tight_layout()  # Adjust the layout
 plt.show()
 # %%
-fig.savefig("../../figures/bilateral_breathing_behaviors.png", dpi=600)
+fig.savefig("../../figures/bilateral_breathing_behaviors_envelope.png", dpi=600)
 
 # %%
