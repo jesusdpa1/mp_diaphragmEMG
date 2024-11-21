@@ -8,7 +8,48 @@ The following repository contains all the code use to produce the figures availa
 
 The code contains functions to  filter and calculate the envelop of the EMG signal
 
-## Python
+## Pipeline 
+
+``` mermaid
+classDiagram
+   direction LR
+      Recording --> Filtering
+      Filtering --> DCRemoval 
+      DCRemoval--> Linear Envelop
+      Linear Envelop-->Normalization
+
+      Filtering --() Bandpass
+      Filtering --() Notch
+      
+   
+
+   class Recording{
+      Sampling rate: 25Khz
+   }
+
+   class Bandpass{
+      Frequency Response
+      - Low-cut 0.1Hz
+      - High-cut: 2000Hz
+   }
+
+   class Notch{
+      Cutoff: 60Hz
+   }
+
+   class Linear Envelop{
+      - rectification: abs
+      - window size: 0.055s
+      - window type: rectangular
+      type() Moving RMS
+   }
+   class Normalization {
+      MinMax
+   }
+
+```
+
+## Installation
 
 > [!CAUTION]
 > based to the best of our knowledge, Sonpy last release was on 2021 and is constrained to python 3.9 to 3.10, therefore we recommend installing either of this python version to guarantee the execution of our code
