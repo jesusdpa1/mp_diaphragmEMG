@@ -12,12 +12,15 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 import matplotlib.ticker as ticker
+import matplotlib.patches as patches
+import matplotlib.patheffects as pe
+
 from mp_emgdiaphragm.mpstyle import load_plt_config, ColorPalette
 
 # Data loading and manipulation
 from neo.io import CedIO
 import numpy as np
-
+from sklearn.preprocessing import MinMaxScaler
 # units
 # import quantities as pq
 
@@ -70,7 +73,7 @@ tsx_bp_l = dc_removal(
 
 # %%
 # plot full recording filtered
-import matplotlib.patches as patches
+
 
 time = np.arange(0, tsx_bp_r.__len__()) * (1 / fs)
 
@@ -159,6 +162,41 @@ plt.show()
 # %%
 fig.savefig("../../figures/composed_full-recording.png", dpi=600)
 # %%
+# Normalization based on Eupnea period
+
+start_time = 0
+end_time = 30
+start_sample = int(start_time * fs)
+end_sample = int(end_time * fs)
+tsx_sample_r = tsx_bp_r[start_sample:end_sample]
+tsx_sample_l = tsx_bp_l[start_sample:end_sample]
+
+overlap = 0.99
+window_type = "rectangular"
+window_size = int(0.033 * fs)  # window size
+window_beta = None
+rectify_method = "None"
+
+tsx_sample_r_rms = get_rms_envelope(
+    tsx_sample_r, overlap, window_type, window_size, window_beta, rectify_method
+)  # eupnic breathing moving rms envelope right
+
+tsx_sample_l_rms = get_rms_envelope(
+    tsx_sample_l, overlap, window_type, window_size, window_beta, rectify_method
+)  # eupnic breathing moving rms envelope right
+
+# normalization min max method
+scaler_rms_r = MinMaxScaler()
+tsx_sample_r_rms_norm = scaler_rms_r.fit_transform(tsx_sample_r_rms[..., np.newaxis])[
+    :, 0
+]
+
+scaler_rms_l = MinMaxScaler()
+tsx_sample_l_rms_norm = scaler_rms_l.fit_transform(tsx_sample_l_rms[..., np.newaxis])[
+    :, 0
+]
+
+# %%
 # individual plots
 # getting the envelope
 plot_names = dict(
@@ -179,9 +217,9 @@ for behavior, time_ in highlight_times.items():
 
     overlap = 0.99
     window_type = "rectangular"
-    window_size = int(0.055 * fs)  # window size
+    window_size = int(0.033 * fs)  # window size
     window_beta = None
-    rectify_method = "abs"
+    rectify_method = "None"
 
     tsx_sample_r_rms = get_rms_envelope(
         tsx_sample_r, overlap, window_type, window_size, window_beta, rectify_method
@@ -191,8 +229,14 @@ for behavior, time_ in highlight_times.items():
         tsx_sample_l, overlap, window_type, window_size, window_beta, rectify_method
     )  # eupnic breathing moving rms envelope right
 
-    tsx_sample_r_rms_norm = min_max_normalization(tsx_sample_r_rms)
-    tsx_sample_l_rms_norm = min_max_normalization(tsx_sample_l_rms)
+    # normalization min max method
+    tsx_sample_r_rms_norm = scaler_rms_r.transform(tsx_sample_r_rms[..., np.newaxis])[
+        :, 0
+    ]
+
+    tsx_sample_l_rms_norm = scaler_rms_l.transform(tsx_sample_l_rms[..., np.newaxis])[
+        :, 0
+    ]
 
     time = np.linspace(start_time, end_time, tsx_sample_r.__len__())
 
@@ -211,17 +255,23 @@ for behavior, time_ in highlight_times.items():
         linewidth=0.5,
         label="pre-processed",
     )
-
+    # ENVELOPE
     axs[0].plot(
-        time, tsx_sample_r_rms_norm, color=colors_.colorplot["3"], label="RMS LE"
+        time,
+        tsx_sample_r_rms_norm,
+        color="#0070FF",
+        label="RMS LE",
+        linewidth=0.9,
+        path_effects=[pe.Stroke(linewidth=1, foreground="#394555"), pe.Normal()],
     )
+
     axs[0].fill_between(
         time,
         tsx_sample_r_rms_norm,
         0,
         where=(tsx_sample_r_rms_norm < 1.1),
-        color=colors_.colorplot["4"],
-        alpha=0.15,
+        color="#0070FF",
+        alpha=0.3,
     )
 
     axs[0].set_xticklabels([])
@@ -231,19 +281,19 @@ for behavior, time_ in highlight_times.items():
                 [0],
                 [0],
                 marker="o",
-                color=colors_.colorplot["5"],
-                alpha=0.5,
-                label="right hemi-diaphragm",
-                markerfacecolor=colors_.colorplot["5"],
+                color="#394555",
+                label="Norm RMS LE",
+                markerfacecolor="#0070FF",
                 markersize=markersize,
             ),
             Line2D(
                 [0],
                 [0],
                 marker="o",
-                color=colors_.colorplot["3"],
-                label="Norm RMS LE",
-                markerfacecolor=colors_.colorplot["4"],
+                color=colors_.colorplot["5"],
+                alpha=0.5,
+                label="right hemi-diaphragm",
+                markerfacecolor=colors_.colorplot["5"],
                 markersize=markersize,
             ),
         ],
@@ -265,19 +315,36 @@ for behavior, time_ in highlight_times.items():
     )
 
     axs[1].plot(
-        time, tsx_sample_l_rms_norm, color=colors_.colorplot["7"], label="RMS LE"
+        time,
+        tsx_sample_l_rms_norm,
+        color=colors_.colorplot["7"],
+        label="RMS LE",
+        linewidth=0.9,
+        path_effects=[
+            pe.Stroke(linewidth=1, foreground=colors_.colorplot["8"]),
+            pe.Normal(),
+        ],
     )
     axs[1].fill_between(
         time,
         tsx_sample_l_rms_norm,
         0,
-        where=(tsx_sample_l_rms_norm < 1.1),
+        where=(tsx_sample_l_rms_norm <= tsx_sample_l_rms_norm.max()),
         color=colors_.colorplot["8"],
-        alpha=0.15,
+        alpha=0.3,
     )
 
     axs[1].legend(
         handles=[
+            Line2D(
+                [0],
+                [0],
+                marker="o",
+                color=colors_.colorplot["7"],
+                label="Norm RMS LE",
+                markerfacecolor=colors_.colorplot["8"],
+                markersize=markersize,
+            ),
             Line2D(
                 [0],
                 [0],
@@ -288,15 +355,6 @@ for behavior, time_ in highlight_times.items():
                 markerfacecolor=colors_.colorplot["6"],
                 markersize=markersize,
             ),
-            Line2D(
-                [0],
-                [0],
-                marker="o",
-                color=colors_.colorplot["7"],
-                label="Norm RMS LE",
-                markerfacecolor=colors_.colorplot["8"],
-                markersize=markersize,
-            ),
         ],
         prop={"weight": "bold", "size": 18},
         loc="lower right",
@@ -305,8 +363,8 @@ for behavior, time_ in highlight_times.items():
     )
 
     # Set the same y-axis range for both subplots
-    ymin = -1.8
-    ymax = 1.8
+    ymin = -1.5
+    ymax = 2.5
     for ax in axs:
         ax.set_ylim(ymin, ymax)
         ax.set_ylabel(
@@ -320,6 +378,5 @@ for behavior, time_ in highlight_times.items():
 
     plt.tight_layout()  # Adjust the layout
     plt.show()
-
     fig.savefig(f"../../figures/composed_{title_name}-recording.png", dpi=600)
 # %%

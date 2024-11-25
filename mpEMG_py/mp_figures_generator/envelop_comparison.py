@@ -71,7 +71,7 @@ overlap = 0.99
 window_type = "rectangular"
 window_size = int(0.055 * fs)  # window size
 window_beta = None
-rectify_method = "abs"
+rectify_method = "square"
 
 tsx_ma = get_mean_envelope(
     tsx_sample, overlap, window_type, window_size, window_beta, rectify_method
@@ -86,9 +86,9 @@ tsx_tdt = tdt_envelope(tsx_sample, 4, fs)  # tdt envelope
 # %%
 # normalize all the envelopes for vizualization
 
-tsx_ma_norm = min_max_normalization(tsx_ma)
-tsx_rms_norm = min_max_normalization(tsx_rms)
-tsx_lp_norm = min_max_normalization(tsx_lp)
+tsx_ma_norm = min_max_normalization(dc_removal(tsx_ma, method="mean"))
+tsx_rms_norm = min_max_normalization(dc_removal(tsx_rms, method="mean"))
+tsx_lp_norm = min_max_normalization(dc_removal(tsx_lp, method="mean"))
 tsx_tdt_norm = min_max_normalization(dc_removal(tsx_tdt, method="mean"))
 
 # %%
@@ -101,7 +101,14 @@ fig, axs = plt.subplots(4, 1, figsize=(12, 12))
 fsize = 30
 markersize = 20
 # Subplot 0
-axs[0].plot(time, tsx_sample, color=colors_.colorplot["1"], label="pre-processed")
+axs[0].plot(
+    time,
+    tsx_sample,
+    color=colors_.colorplot["5"],
+    alpha=1,
+    linewidth=0.5,
+    label="pre-processed",
+)
 axs[0].set_title(
     "Pre-processed unilateral diaphragm EMG signal", fontsize=fsize, fontweight="bold"
 )
@@ -112,9 +119,9 @@ axs[0].legend(
             [0],
             [0],
             marker="o",
-            color=colors_.colorplot["1"],
+            color=colors_.colorplot["6"],
             label="Pre-processed",
-            markerfacecolor=colors_.colorplot["1"],
+            markerfacecolor=colors_.colorplot["5"],
             markersize=markersize,
         ),
     ],
@@ -126,16 +133,23 @@ axs[0].legend(
 
 
 # Subplot 1
+# Filtered signal
 axs[1].plot(
-    time, tsx_sample, color=colors_.colorplot["1"], alpha=0.5, label="pre-processed"
+    time,
+    tsx_sample,
+    color=colors_.colorplot["5"],
+    alpha=0.95,
+    linewidth=0.5,
+    label="pre-processed",
 )
-axs[1].plot(time, tsx_ma_norm, color=colors_.colorplot["3"], label="MA LE")
+# Linear Envelope
+axs[1].plot(time, tsx_ma_norm, color=colors_.colorplot["1"], label="MA LE")
 axs[1].fill_between(
     time,
     tsx_ma_norm,
     0,
     where=(tsx_ma_norm < 1.1),
-    color=colors_.colorplot["4"],
+    color=colors_.colorplot["2"],
     alpha=0.15,
 )
 axs[1].set_title(
@@ -150,19 +164,18 @@ axs[1].legend(
             [0],
             [0],
             marker="o",
-            color=colors_.colorplot["1"],
-            alpha=0.5,
+            color=colors_.colorplot["6"],
             label="Pre-processed",
-            markerfacecolor=colors_.colorplot["1"],
+            markerfacecolor=colors_.colorplot["5"],
             markersize=markersize,
         ),
         Line2D(
             [0],
             [0],
             marker="o",
-            color=colors_.colorplot["3"],
+            color=colors_.colorplot["1"],
             label="MA LE",
-            markerfacecolor=colors_.colorplot["4"],
+            markerfacecolor=colors_.colorplot["2"],
             markersize=markersize,
         ),
     ],
@@ -173,16 +186,23 @@ axs[1].legend(
 )
 
 # Subplot 2
+# filtered Signal
 axs[2].plot(
-    time, tsx_sample, color=colors_.colorplot["1"], alpha=0.5, label="pre-processed"
+    time,
+    tsx_sample,
+    color=colors_.colorplot["5"],
+    alpha=0.95,
+    linewidth=0.5,
+    label="pre-processed",
 )
-axs[2].plot(time, tsx_rms_norm, color=colors_.colorplot["5"], label="RMS LE")
+# Linear Envelope
+axs[2].plot(time, tsx_rms_norm, color=colors_.colorplot["3"], label="RMS LE")
 axs[2].fill_between(
     time,
     tsx_rms_norm,
     0,
     where=(tsx_rms_norm < 1.1),
-    color=colors_.colorplot["6"],
+    color=colors_.colorplot["4"],
     alpha=0.15,
 )
 axs[2].set_title(
@@ -195,19 +215,18 @@ axs[2].legend(
             [0],
             [0],
             marker="o",
-            color=colors_.colorplot["1"],
-            alpha=0.5,
+            color=colors_.colorplot["6"],
             label="Pre-processed",
-            markerfacecolor=colors_.colorplot["1"],
+            markerfacecolor=colors_.colorplot["5"],
             markersize=markersize,
         ),
         Line2D(
             [0],
             [0],
             marker="o",
-            color=colors_.colorplot["5"],
+            color=colors_.colorplot["3"],
             label="RMS LE",
-            markerfacecolor=colors_.colorplot["6"],
+            markerfacecolor=colors_.colorplot["4"],
             markersize=markersize,
         ),
     ],
@@ -218,9 +237,16 @@ axs[2].legend(
 )
 
 # Subplot 3
+# Filtered signal
 axs[3].plot(
-    time, tsx_sample, color=colors_.colorplot["1"], alpha=0.5, label="pre-processed"
+    time,
+    tsx_sample,
+    color=colors_.colorplot["5"],
+    alpha=0.95,
+    linewidth=0.5,
+    label="pre-processed",
 )
+# Linear Envelope
 axs[3].plot(time, tsx_lp_norm, color=colors_.colorplot["7"], label="LP LE")
 axs[3].fill_between(
     time,
@@ -239,10 +265,9 @@ axs[3].legend(
             [0],
             [0],
             marker="o",
-            color=colors_.colorplot["1"],
-            alpha=0.5,
+            color=colors_.colorplot["6"],
             label="Pre-processed",
-            markerfacecolor=colors_.colorplot["1"],
+            markerfacecolor=colors_.colorplot["5"],
             markersize=markersize,
         ),
         Line2D(
