@@ -1,6 +1,22 @@
 """
 Author: jpenaloza
 Description: pipeline to plot longitudinal response
+
+# choose file to plot
+# data files Streeter lab:
+#// [2] A21-2wk_streeterLab.smrx
+# [3] A23-2wk_streeterLab.smrx
+# [4] A23-4wk_streeterLab.smrx
+# [5] A23-8wk_streeterLab.smrx
+# [6] A23-BL_streeterLab.smrx
+#// [7] A6-BL.smrx
+
+# data files DaleLab:
+# [0] A00-40Wk_daleLab.smrx
+# [1] A00-BL_daleLab.smrx
+
+
+data bandpass filtered 4Hz to 1000Hz butter, order 4
 """
 
 # %%
@@ -39,7 +55,7 @@ colors_ = ColorPalette()
 # define home (Drive were data is located)
 home = Path.home()
 # define the path to the data file
-data_path = r"Documents\data\Methods-Paper_EMG\Data for EMG Traces Over Time (BL, 2 wk, 4wk, 8 wk, BL, 40 wk)"
+data_path = r"Documents\data\Methods-Paper_EMG\longitudinal-data"
 
 # build the path to the data file
 data_working_path = home.joinpath(data_path)
@@ -47,13 +63,14 @@ data_working_path = home.joinpath(data_path)
 print(data_working_path)
 # %%
 # list all the files within the directory
-data_list_path = list(data_working_path.glob("*"))
+data_list_path = list(data_working_path.glob("*.smrx"))
 data_list_path.sort()
 print_list(data_list_path)
 # %%
-"""" Load baseline recording to extract the min max values for future normalization"""
-# choose file to plot
-baseline_working_path = data_list_path[3]
+# Load baseline recording to extract the min max values for future normalization
+# A23-BL_streeterLab.smrx or A00-BL_daleLab.smrx
+# (use for the group plotting, ie. streeterLab for streeterLab, daleLab-> daleLab)
+baseline_working_path = data_list_path[1]
 # %%
 # load EUPNIC data using CedIO
 baseline_reader = CedIO(filename=baseline_working_path)
@@ -65,15 +82,16 @@ baseline_data_block
 baseline_emg_r = baseline_data_block.analogsignals[0]
 fs = float(baseline_emg_r.sampling_rate)  # assuming all sampling rates are the same
 # %%
-trim_ = int(fs * 60)
-baseline_r = baseline_emg_r.magnitude.squeeze()
+# potential gain discrepancies between dalelab and streeter lab
+# multiply data by 10 to get 10x gain
+baseline_r = baseline_emg_r.magnitude.squeeze() * 10
 baseline_notch_r = notch_filter(baseline_r, fs=fs)
 baseline_bp_r = dc_removal(
     butter_bandpass_filter(
-        tsx=baseline_notch_r, lowcut=1, highcut=1000, fs=fs, order=4
+        tsx=baseline_notch_r, lowcut=4, highcut=1000, fs=fs, order=4
     ),
     method="median",
-)[0:trim_]
+)
 # %%
 # individual plots
 # getting the envelope
@@ -89,7 +107,7 @@ overlap = 0.99
 window_type = "rectangular"
 window_size = int(0.055 * fs)  # window size
 window_beta = None
-rectify_method = "None"
+rectify_method = "none"
 
 baseline_sample_r_rms = get_rms_envelope(
     baseline_sample_r, overlap, window_type, window_size, window_beta, rectify_method
@@ -101,7 +119,7 @@ baseline_sample_r_rms_norm = baseline_scaler.fit_transform(
 plt.plot(baseline_sample_r_rms)
 
 
-"""" END OF NORMALIZATION ACQUISITION BACK TO PLOTTING """
+### END OF NORMALIZATION ACQUISITION BACK TO PLOTTING ###
 
 # %%
 # Plotting all values based on the same baseline mix max values
@@ -109,6 +127,7 @@ plt.plot(baseline_sample_r_rms)
 recording_working_path = data_list_path[1]
 # %%
 # load EUPNIC data using CedIO
+print(recording_working_path.name)
 recording_reader = CedIO(filename=recording_working_path)
 recording_data = recording_reader.read()
 recording_data_block = recording_data[0].segments[0]
@@ -118,11 +137,11 @@ tsx_emg_r = recording_data_block.analogsignals[0]
 fs = float(tsx_emg_r.sampling_rate)  # assuming all sampling rates are the same
 # %%
 trim_ = int(fs * 10)
-tsx_r = tsx_emg_r.magnitude.squeeze()
+tsx_r = tsx_emg_r.magnitude.squeeze() * 10
 tsx_notch_r = notch_filter(tsx_r, fs=fs)
 tsx_bp_r = dc_removal(
-    butter_bandpass_filter(tsx=tsx_notch_r, lowcut=1, highcut=1000, fs=fs, order=4),
-    method="median",
+    butter_bandpass_filter(tsx=tsx_notch_r, lowcut=4, highcut=1000, fs=fs, order=4),
+    method="mean",
 )[0:trim_]
 # %%
 # individual plots
@@ -139,7 +158,7 @@ overlap = 0.99
 window_type = "rectangular"
 window_size = int(0.055 * fs)  # window size
 window_beta = None
-rectify_method = "None"
+rectify_method = "none"
 
 tsx_sample_r_rms = get_rms_envelope(
     tsx_sample_r, overlap, window_type, window_size, window_beta, rectify_method
@@ -215,7 +234,7 @@ axs.legend(
 )
 
 # Set the same y-axis range for both subplots
-ymin = -1
+ymin = -0.8
 ymax = 1.2
 
 axs.set_ylim(ymin, ymax)
@@ -230,6 +249,7 @@ plt.tight_layout()  # Adjust the layout
 plt.show()
 # %%
 fig.savefig(
-    f"../../figures/composed_{recording_working_path.name}-recording.png", dpi=600
+    f"../../figures/composed_{recording_working_path.name}-recording_10xgain.png",
+    dpi=600,
 )
 # %%

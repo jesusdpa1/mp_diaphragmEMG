@@ -78,7 +78,7 @@ tsx_ma = get_mean_envelope(
 )  # moving average envelope
 
 tsx_rms = get_rms_envelope(
-    tsx_sample, overlap, window_type, window_size, window_beta, rectify_method
+    tsx_sample, overlap, window_type, window_size, window_beta, rectify_method="none"
 )  # moving rms envelope
 
 tsx_lp = lp_envelope(tsx_sample, 4, fs)  # low-pass filter

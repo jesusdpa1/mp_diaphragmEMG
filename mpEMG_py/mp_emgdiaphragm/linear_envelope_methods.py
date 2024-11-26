@@ -139,10 +139,10 @@ def get_rms_envelope(
     window_type: str = "rectangular",
     window_size: int = 1,
     window_beta: int = None,
-    rectify_method: str = "abs",
 ) -> np.ndarray:
     """
     Moving RMS Detector implementation using convolution.
+    rectify_method is integrated in the rms -> np.square()
 
     Parameters:
     tsx (np.ndarray): Input signal.
@@ -150,21 +150,14 @@ def get_rms_envelope(
     window_size (int): Window size in samples.
     window_beta (int, optional): Beta parameter for Kaiser window. Defaults to None.
     window_type (str): Window type ('rectangular', 'hann', 'hamming', 'blackman', 'kaiser').
-    rectify_method (str): Rectification method ('abs', 'square', 'hilbert', 'none')
+
 
     Returns:
     detected_signal (array): Output of moving RMS detector.
     """
 
-    valid_rectify_methods = ["abs", "square", "hilbert", "none"]
-    if rectify_method not in valid_rectify_methods:
-        raise ValueError(f"Invalid rectify method. Options: {valid_rectify_methods}")
-
     # rectify signal
-    rectified_signal = (
-        tsx if rectify_method == "none" else rectify_tsx(tsx, rectify_method)
-    )
-
+    rectified_signal = tsx
     # Convolve the signal with the squared window
     envelope_signal = rolling_rms(
         rectified_signal,
