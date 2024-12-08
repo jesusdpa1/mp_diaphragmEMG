@@ -78,7 +78,7 @@ tsx_ma = get_mean_envelope(
 )  # moving average envelope
 
 tsx_rms = get_rms_envelope(
-    tsx_sample, overlap, window_type, window_size, window_beta, rectify_method="none"
+    tsx_sample, overlap, window_type, window_size, window_beta
 )  # moving rms envelope
 
 tsx_lp = lp_envelope(tsx_sample, 4, fs)  # low-pass filter
@@ -110,7 +110,9 @@ axs[0].plot(
     label="pre-processed",
 )
 axs[0].set_title(
-    "Pre-processed unilateral diaphragm EMG signal", fontsize=fsize, fontweight="bold"
+    "Pre-processed unilateral diaphragm EMG signal",
+    fontsize=fsize,
+    fontweight="bold",
 )
 axs[0].set_xticklabels([])
 axs[0].legend(
@@ -164,18 +166,19 @@ axs[1].legend(
             [0],
             [0],
             marker="o",
-            color=colors_.colorplot["6"],
-            label="Pre-processed",
-            markerfacecolor=colors_.colorplot["5"],
+            color=colors_.colorplot["1"],
+            label="MA LE",
+            markerfacecolor=colors_.colorplot["2"],
             markersize=markersize,
         ),
         Line2D(
             [0],
             [0],
             marker="o",
-            color=colors_.colorplot["1"],
-            label="MA LE",
-            markerfacecolor=colors_.colorplot["2"],
+            color=colors_.colorplot["6"],
+            label="Pre-processed",
+            alpha=0.80,
+            markerfacecolor=colors_.colorplot["5"],
             markersize=markersize,
         ),
     ],
@@ -195,14 +198,14 @@ axs[2].plot(
     linewidth=0.5,
     label="pre-processed",
 )
-# Linear Envelope
-axs[2].plot(time, tsx_rms_norm, color=colors_.colorplot["3"], label="RMS LE")
+# Linear Envelope RMS
+axs[2].plot(time, tsx_rms_norm, color="#0070FF", label="RMS LE")
 axs[2].fill_between(
     time,
     tsx_rms_norm,
     0,
     where=(tsx_rms_norm < 1.1),
-    color=colors_.colorplot["4"],
+    color="#0070FF",
     alpha=0.15,
 )
 axs[2].set_title(
@@ -215,18 +218,19 @@ axs[2].legend(
             [0],
             [0],
             marker="o",
-            color=colors_.colorplot["6"],
-            label="Pre-processed",
-            markerfacecolor=colors_.colorplot["5"],
+            color="#394555",
+            label="RMS LE",
+            markerfacecolor="#0070FF",
             markersize=markersize,
         ),
         Line2D(
             [0],
             [0],
             marker="o",
-            color=colors_.colorplot["3"],
-            label="RMS LE",
-            markerfacecolor=colors_.colorplot["4"],
+            color=colors_.colorplot["6"],
+            label="Pre-processed",
+            alpha=0.80,
+            markerfacecolor=colors_.colorplot["5"],
             markersize=markersize,
         ),
     ],
@@ -265,18 +269,19 @@ axs[3].legend(
             [0],
             [0],
             marker="o",
-            color=colors_.colorplot["6"],
-            label="Pre-processed",
-            markerfacecolor=colors_.colorplot["5"],
+            color=colors_.colorplot["7"],
+            label="LP LE",
+            markerfacecolor=colors_.colorplot["8"],
             markersize=markersize,
         ),
         Line2D(
             [0],
             [0],
             marker="o",
-            color=colors_.colorplot["7"],
-            label="LP LE",
-            markerfacecolor=colors_.colorplot["8"],
+            color=colors_.colorplot["6"],
+            label="Pre-processed",
+            alpha=0.80,
+            markerfacecolor=colors_.colorplot["5"],
             markersize=markersize,
         ),
     ],
@@ -288,15 +293,15 @@ axs[3].legend(
 
 
 for ax in axs:
-    ax.set_ylabel("A.Units", fontsize=30, weight="bold")
+    ax.set_ylabel("A.Units", fontsize=30, weight="bold", labelpad=10)
     ax.tick_params(axis="y", labelsize=20)
     ax.set_ylim(-0.5, 1.1)
 
-axs[3].set_xlabel("Time (s)", fontsize=30)
+axs[3].set_xlabel("Time (s)", fontsize=30, labelpad=15)
 axs[3].tick_params(axis="x", labelsize=20)
 plt.tight_layout()  # Adjust the layout
 plt.show()
 # %%
-fig.savefig("../../figures/envelop_comparison.png", dpi=600)
+fig.savefig("../../figures/composed_envelop_comparison.png", dpi=600)
 
 # %%
