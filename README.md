@@ -8,6 +8,8 @@ The following repository contains all the code use to produce the figures availa
 
 The code contains functions to  filter and calculate the envelop of the EMG signal
 
+We use NEO[^1] to load the CED dataset
+
 ## Pipeline 
 
 ``` mermaid
@@ -102,3 +104,8 @@ classDiagram
 - Jesús Peñaloza <jesus.penalozaa@ufl.edu>
 - Taylor Holmes <taylor.holmes@marquette.edu>
 
+## References 
+[^1]: Garcia S., Guarino D., Jaillet F., Jennings T.R., Pröpper R., Rautenberg P.L.,
+    Rodgers C., Sobolev A.,Wachtler T., Yger P. and Davison A.P. (2014)
+    Neo: an object model for handling electrophysiology data in multiple formats.
+    Frontiers in Neuroinformatics 8:10: doi:10.3389/fninf.2014.00010
