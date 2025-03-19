@@ -2,7 +2,7 @@
 
 **Title:** A simple, low-cost and adaptable diaphragm electromyography implant for respiratory neuromuscular recordings in awake animals
 
-**DOI:** ?
+**DOI:** https://doi.org/10.1523/ENEURO.0444-24.2025
 
 The following repository contains all the code use to produce the figures available in the methods paper. 
 
