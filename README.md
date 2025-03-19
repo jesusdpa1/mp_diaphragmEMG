@@ -1,14 +1,16 @@
-# mp_diaphragmEMG
+## A simple, low-cost implant for reliable diaphragm EMG recordings in awake, freely behaving rats[^1]
+
 
 **Title:** A simple, low-cost and adaptable diaphragm electromyography implant for respiratory neuromuscular recordings in awake animals
 
-**DOI:** https://doi.org/10.1523/ENEURO.0444-24.2025
+**DOI:** [10.1523/eneuro.0444-24.2025](https://www.eneuro.org/content/12/2/ENEURO.0444-24.2025)
+    
 
 The following repository contains all the code use to produce the figures available in the methods paper. 
 
 The code contains functions to  filter and calculate the envelop of the EMG signal
 
-We use NEO[^1] to load the CED dataset
+We use NEO[^2] to load the CED dataset
 
 ## Pipeline 
 
@@ -105,7 +107,10 @@ classDiagram
 - Taylor Holmes <taylor.holmes@marquette.edu>
 
 ## References 
-[^1]: Garcia S., Guarino D., Jaillet F., Jennings T.R., Pröpper R., Rautenberg P.L.,
+[^1]: T. C. Holmes, J. D. Penaloza-Aponte, A. R. Mickle, R. L. Nosacka, E. A. Dale, and K. A. Streeter, “A simple, low-cost implant for reliable diaphragm EMG recordings in awake, freely behaving rats,” eneuro, p. ENEURO.0444-24.2025, 2025, doi: 10.1523/eneuro.0444-24.2025.
+
+[^2]: Garcia S., Guarino D., Jaillet F., Jennings T.R., Pröpper R., Rautenberg P.L.,
     Rodgers C., Sobolev A.,Wachtler T., Yger P. and Davison A.P. (2014)
     Neo: an object model for handling electrophysiology data in multiple formats.
     Frontiers in Neuroinformatics 8:10: doi:10.3389/fninf.2014.00010
+   
