@@ -1,6 +1,6 @@
 # mp-diaphragmEMG Python
 
-Python package containing code to create figures for the paper DOI: 
+Python package containing code to create figures for the paper DOI: https://doi.org/10.1523/ENEURO.0444-24.2025
 
 ## Installation guide
 
@@ -9,15 +9,17 @@ Python package containing code to create figures for the paper DOI:
 
 1. Create a python environment using your preferred python env. 
    ``` sh
-   # Example
+   # Example conda
     conda creave -n mp-diaphragm --python=3.10
     conda activate mp-diaphragm
+   # if uv is available, it will create a .venv within the project folder
+   uv syn
    ```
 2. Open a terminal and go to the folder where the file pyproject.toml is located
 3. Install all the dependencies using the following command
    ```sh
-   # if poetry is available
-   poetry update --all
+   # if uv is available
+   uv sync
    # else 
    pip install -e .
    ```

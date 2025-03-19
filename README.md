@@ -1,5 +1,8 @@
 ## A simple, low-cost implant for reliable diaphragm EMG recordings in awake, freely behaving rats[^1]
 
+
+**Title:** A simple, low-cost and adaptable diaphragm electromyography implant for respiratory neuromuscular recordings in awake animals
+
 **DOI:** [10.1523/eneuro.0444-24.2025](https://www.eneuro.org/content/12/2/ENEURO.0444-24.2025)
     
 
