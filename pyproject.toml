@@ -10,16 +10,16 @@ authors = [
 ]
 requires-python = " >=3.9, <3.10"
 dependencies = [
-    "ipympl",
-    "matplotlib",
-    "mpl-interactions[jupyter]",
-    "neo",
-    "numpy",
-    "pyarrow",
-    "ruptures",
-    "scikit-learn",
-    "scipy",
-    "sonpy",
+    "ipympl>=0.9.7",
+    "matplotlib>=3.9.4",
+    "mpl-interactions[jupyter]>=0.24.2",
+    "neo==0.12.0",
+    "numpy==1.26",
+    "pyarrow>=19.0.1",
+    "ruptures>=1.1.9",
+    "scikit-learn>=1.6.1",
+    "scipy>=1.13.1",
+    "sonpy>=1.9.5",
 ]
 
 
